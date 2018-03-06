@@ -1,0 +1,40 @@
+dist: trusty
+sudo: required
+language: go
+go:
+- "1.8"
+
+env:
+  global:
+    - CHANGE_MINIKUBE_NONE_USER=true
+    - PROCTOR_ENVIRONMENT="development"
+    - PROCTOR_LOG_LEVEL="debug"
+    - PROCTOR_APP_PORT="5000"
+    - PROCTOR_DEFAULT_NAMESPACE="default"
+    - PROCTOR_REDIS_ADDRESS="localhost:6379"
+    - PROCTOR_REDIS_MAX_ACTIVE_CONNECTIONS="10"
+    - PROCTOR_KUBE_JOB_ACTIVE_DEADLINE_SECONDS="60"
+    - PROCTOR_LOGS_STREAM_READ_BUFFER_SIZE="140"
+    - PROCTOR_LOGS_STREAM_WRITE_BUFFER_SIZE="4096"
+    - PROCTOR_KUBE_CLUSTER_HOST_NAME="localhost:8001"
+    - PROCTOR_KUBE_POD_LIST_WAIT_TIME="5"
+
+servervices:
+  - redis-server
+
+before_script:
+# Install glide
+- curl https://glide.sh/get | sh
+# Start Redis sever
+- sudo service redis-server start 
+
+stages:
+  - test
+
+jobs:
+  include:
+    - stage: test
+      script:
+        - glide install
+        - go build
+        - go test -race -cover $(glide novendor)
