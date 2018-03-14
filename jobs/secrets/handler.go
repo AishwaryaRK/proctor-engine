@@ -8,21 +8,21 @@ import (
 	"github.com/gojekfarm/proctor-engine/utility"
 )
 
-type secretsHandler struct {
+type handler struct {
 	secretsStore Store
 }
 
-type SecretsHandler interface {
+type Handler interface {
 	HandleSubmission() http.HandlerFunc
 }
 
-func NewSecretsHandler(secretsStore Store) SecretsHandler {
-	return &secretsHandler{
+func NewHandler(secretsStore Store) Handler {
+	return &handler{
 		secretsStore: secretsStore,
 	}
 }
 
-func (secretsHandler *secretsHandler) HandleSubmission() http.HandlerFunc {
+func (handler *handler) HandleSubmission() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		var secret Secret
 		err := json.NewDecoder(req.Body).Decode(&secret)
@@ -35,7 +35,7 @@ func (secretsHandler *secretsHandler) HandleSubmission() http.HandlerFunc {
 			return
 		}
 
-		err = secretsHandler.secretsStore.CreateOrUpdateJobSecret(secret)
+		err = handler.secretsStore.CreateOrUpdateJobSecret(secret)
 		if err != nil {
 			logger.Error("Error updating secrets", err.Error())
 

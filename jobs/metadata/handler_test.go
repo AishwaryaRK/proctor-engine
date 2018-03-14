@@ -20,14 +20,14 @@ import (
 type MetadataHandlerTestSuite struct {
 	suite.Suite
 	mockStore           *MockStore
-	testMetadataHandler MetadataHandler
+	testMetadataHandler Handler
 	serverError         string
 }
 
 func (s *MetadataHandlerTestSuite) SetupTest() {
 	s.mockStore = &MockStore{}
 
-	s.testMetadataHandler = NewMetadataHandler(s.mockStore)
+	s.testMetadataHandler = NewHandler(s.mockStore)
 
 	s.serverError = "Something went wrong"
 }
