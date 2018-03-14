@@ -1,7 +1,6 @@
 package kubernetes
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"time"
@@ -15,6 +14,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
 	batch_v1 "k8s.io/client-go/pkg/apis/batch/v1"
+	//Package needed for kubernetes cluster in google cloud
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -141,43 +141,43 @@ func (client *client) StreamJobLogs(jobName string) (io.ReadCloser, error) {
 	for {
 		listOfPods, err := kubernetesPods.List(listOptions)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("Error fetching kubernetes Pods list %v", err))
+			return nil, fmt.Errorf("Error fetching kubernetes Pods list %v", err)
 		}
 
 		if len(listOfPods.Items) > 0 {
 			podJob := listOfPods.Items[0]
 			if podJob.Status.Phase == v1.PodRunning || podJob.Status.Phase == v1.PodSucceeded || podJob.Status.Phase == v1.PodFailed {
 				return getLogsStreamReaderFor(podJob.ObjectMeta.Name)
-			} else {
-				watchPod, err := kubernetesPods.Watch(listOptions)
-				if err != nil {
-					return nil, errors.New(fmt.Sprintf("Error watching kubernetes Pods %v", err))
-				}
-
-				resultChan := watchPod.ResultChan()
-				defer watchPod.Stop()
-
-				waitingForKubePods := make(chan bool)
-				go func() {
-					defer close(waitingForKubePods)
-					time.Sleep(time.Duration(config.KubePodsListWaitTime()) * time.Second)
-					waitingForKubePods <- true
-				}()
-
-				select {
-				case <-resultChan:
-					continue
-				case <-waitingForKubePods:
-					return nil, errors.New(fmt.Sprintf("Pod didn't reach active state after waiting for %d minutes", config.KubePodsListWaitTime()))
-				}
 			}
+			watchPod, err := kubernetesPods.Watch(listOptions)
+			if err != nil {
+				return nil, fmt.Errorf("Error watching kubernetes Pods %v", err)
+			}
+
+			resultChan := watchPod.ResultChan()
+			defer watchPod.Stop()
+
+			waitingForKubePods := make(chan bool)
+			go func() {
+				defer close(waitingForKubePods)
+				time.Sleep(time.Duration(config.KubePodsListWaitTime()) * time.Second)
+				waitingForKubePods <- true
+			}()
+
+			select {
+			case <-resultChan:
+				continue
+			case <-waitingForKubePods:
+				return nil, fmt.Errorf("Pod didn't reach active state after waiting for %d minutes", config.KubePodsListWaitTime())
+			}
+
 		} else {
 			batchV1 := client.clientSet.BatchV1()
 			kubernetesJobs := batchV1.Jobs(namespace)
 
 			watchJob, err := kubernetesJobs.Watch(listOptions)
 			if err != nil {
-				return nil, errors.New(fmt.Sprintf("Error watching kubernetes Jobs %v", err))
+				return nil, fmt.Errorf("Error watching kubernetes Jobs %v", err)
 			}
 
 			resultChan := watchJob.ResultChan()
@@ -194,7 +194,7 @@ func (client *client) StreamJobLogs(jobName string) (io.ReadCloser, error) {
 			case <-resultChan:
 				continue
 			case <-waitingForKubeJobs:
-				return nil, errors.New(fmt.Sprintf("Couldn't find a pod for job's given list options %v after waiting for %d minutes", listOptions, config.KubePodsListWaitTime()))
+				return nil, fmt.Errorf("Couldn't find a pod for job's given list options %v after waiting for %d minutes", listOptions, config.KubePodsListWaitTime())
 			}
 		}
 	}

@@ -8,22 +8,22 @@ import (
 	"github.com/gojekfarm/proctor-engine/utility"
 )
 
-type metadataHandler struct {
+type handler struct {
 	store Store
 }
 
-type MetadataHandler interface {
+type Handler interface {
 	HandleSubmission() http.HandlerFunc
 	HandleBulkDisplay() http.HandlerFunc
 }
 
-func NewMetadataHandler(store Store) MetadataHandler {
-	return &metadataHandler{
+func NewHandler(store Store) Handler {
+	return &handler{
 		store: store,
 	}
 }
 
-func (metadataHandler *metadataHandler) HandleSubmission() http.HandlerFunc {
+func (handler *handler) HandleSubmission() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		var jobMetadata []Metadata
 		err := json.NewDecoder(req.Body).Decode(&jobMetadata)
@@ -37,7 +37,7 @@ func (metadataHandler *metadataHandler) HandleSubmission() http.HandlerFunc {
 		}
 
 		for _, metadata := range jobMetadata {
-			err = metadataHandler.store.CreateOrUpdateJobMetadata(metadata)
+			err = handler.store.CreateOrUpdateJobMetadata(metadata)
 			if err != nil {
 				logger.Error("Error updating metadata", err.Error())
 
@@ -51,10 +51,10 @@ func (metadataHandler *metadataHandler) HandleSubmission() http.HandlerFunc {
 	}
 }
 
-func (metadataHandler *metadataHandler) HandleBulkDisplay() http.HandlerFunc {
+func (handler *handler) HandleBulkDisplay() http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 
-		jobMetadata, err := metadataHandler.store.GetAllJobsMetadata()
+		jobMetadata, err := handler.store.GetAllJobsMetadata()
 		if err != nil {
 			logger.Error("Error fetching metadata", err.Error())
 

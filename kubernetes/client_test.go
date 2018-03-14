@@ -102,16 +102,16 @@ func (suite *ClientTestSuite) TestJobExecution() {
 	assert.Equal(t, expectedEnvVars, container.Env)
 }
 
-func (s *ClientTestSuite) TestStreamLogsSuccess() {
-	t := s.T()
+func (suite *ClientTestSuite) TestStreamLogsSuccess() {
+	t := suite.T()
 
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", "http://"+config.KubeClusterHostName()+"/api/v1/namespaces/default/pods/"+s.podName+"/log?follow=true",
+	httpmock.RegisterResponder("GET", "http://"+config.KubeClusterHostName()+"/api/v1/namespaces/default/pods/"+suite.podName+"/log?follow=true",
 		httpmock.NewStringResponder(200, "logs are streaming"))
 
-	logStream, err := s.testClientStreaming.StreamJobLogs(s.jobName)
+	logStream, err := suite.testClientStreaming.StreamJobLogs(suite.jobName)
 	assert.NoError(t, err)
 
 	defer logStream.Close()
@@ -125,10 +125,10 @@ func (s *ClientTestSuite) TestStreamLogsSuccess() {
 
 }
 
-func (s *ClientTestSuite) TestStreamLogsPodNotFoundFailure() {
-	t := s.T()
+func (suite *ClientTestSuite) TestStreamLogsPodNotFoundFailure() {
+	t := suite.T()
 
-	_, err := s.testClientStreaming.StreamJobLogs("unknown-job")
+	_, err := suite.testClientStreaming.StreamJobLogs("unknown-job")
 	assert.Error(t, err)
 }
 

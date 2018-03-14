@@ -29,8 +29,8 @@ func init() {
 
 	jobExecutioner := execution.NewExecutioner(kubeClient, metadataStore, secretsStore)
 	jobLogger := logs.NewLogger(kubeClient)
-	jobMetadataHandler := metadata.NewMetadataHandler(metadataStore)
-	jobSecretsHandler := secrets.NewSecretsHandler(secretsStore)
+	jobMetadataHandler := metadata.NewHandler(metadataStore)
+	jobSecretsHandler := secrets.NewHandler(secretsStore)
 
 	router.HandleFunc("/ping", func(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "pong")

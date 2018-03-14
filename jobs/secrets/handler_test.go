@@ -18,13 +18,13 @@ import (
 type SecretsHandlerTestSuite struct {
 	suite.Suite
 	mockSecretsStore   *MockStore
-	testSecretsHandler SecretsHandler
+	testSecretsHandler Handler
 }
 
 func (suite *SecretsHandlerTestSuite) SetupTest() {
 	suite.mockSecretsStore = &MockStore{}
 
-	suite.testSecretsHandler = NewSecretsHandler(suite.mockSecretsStore)
+	suite.testSecretsHandler = NewHandler(suite.mockSecretsStore)
 }
 
 func (suite *SecretsHandlerTestSuite) TestSuccessfulSecretsUpdation() {
