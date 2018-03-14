@@ -7,8 +7,8 @@ func init() {
 	viper.SetEnvPrefix("PROCTOR")
 }
 
-func Environment() string {
-	return viper.GetString("ENVIRONMENT")
+func KubeConfig() string {
+	return viper.GetString("KUBE_CONFIG")
 }
 
 func LogLevel() string {

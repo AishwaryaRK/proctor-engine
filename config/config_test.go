@@ -9,11 +9,11 @@ import (
 )
 
 func TestEnvironment(t *testing.T) {
-	os.Setenv("PROCTOR_ENVIRONMENT", "development")
+	os.Setenv("PROCTOR_KUBE_CONFIG", "in-cluster")
 
 	viper.AutomaticEnv()
 
-	assert.Equal(t, "development", Environment())
+	assert.Equal(t, "in-cluster", KubeConfig())
 }
 
 func TestLogLevel(t *testing.T) {
