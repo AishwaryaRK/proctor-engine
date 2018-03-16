@@ -88,3 +88,35 @@ func TestKubeJobActiveDeadlineSeconds(t *testing.T) {
 	expectedValue := int64(900)
 	assert.Equal(t, &expectedValue, KubeJobActiveDeadlineSeconds())
 }
+
+func TestPostgresUser(t *testing.T) {
+	os.Setenv("PROCTOR_POSTGRES_USER", "postgres")
+
+	viper.AutomaticEnv()
+
+	assert.Equal(t, "postgres", PostgresUser())
+}
+
+func TestPostgresPassword(t *testing.T) {
+	os.Setenv("PROCTOR_POSTGRES_PASSWORD", "ipsum-lorem")
+
+	viper.AutomaticEnv()
+
+	assert.Equal(t, "ipsum-lorem", PostgresPassword())
+}
+
+func TestPostgresAddress(t *testing.T) {
+	os.Setenv("PROCTOR_POSTGRES_ADDRESS", "localhost:5432")
+
+	viper.AutomaticEnv()
+
+	assert.Equal(t, "localhost:5432", PostgresAddress())
+}
+
+func TestPostgresDatabase(t *testing.T) {
+	os.Setenv("PROCTOR_POSTGRES_DATABASE", "proctor_engine_development")
+
+	viper.AutomaticEnv()
+
+	assert.Equal(t, "proctor_engine_development", PostgresDatabase())
+}

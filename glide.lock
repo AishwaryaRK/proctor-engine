@@ -1,5 +1,5 @@
-hash: 85360538d777573782dc3837e18fdd7c857bd1ec2cd5e2b1c8d4f0295887d7ca
-updated: 2018-03-03T16:09:03.497473+05:30
+hash: e4e0f44aa5639ec2657b52473d4980cfe2ed993802d9d5e32f3329449097c82f
+updated: 2018-03-16T01:54:24.923958+05:30
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
@@ -82,6 +82,10 @@ imports:
   version: 4442edb3db31196622da56482fd8d0fa375fba4d
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
+- name: github.com/lib/pq
+  version: 88edab0803230a3898347e77b474f8c1820a1f20
+  subpackages:
+  - oid
 - name: github.com/magiconair/properties
   version: 49d762b9817ba1c2e9d0c69183c2b4a8b8f1d934
 - name: github.com/mailru/easyjson
@@ -90,6 +94,13 @@ imports:
   - buffer
   - jlexer
   - jwriter
+- name: github.com/mattes/migrate
+  version: 035c07716cd373d88456ec4d701402df52584cb4
+  subpackages:
+  - database
+  - database/postgres
+  - source
+  - source/file
 - name: github.com/mitchellh/mapstructure
   version: 06020f85339e21b2478f756a78e295255ffa4d6a
 - name: github.com/pelletier/go-toml

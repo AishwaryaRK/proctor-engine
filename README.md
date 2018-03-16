@@ -18,13 +18,16 @@ It takes care of executing jobs and maintaining their configuration.
 * Configure kubectl to point to desired kubernetes cluster. For setting up kubernetes cluster locally, refer [here](https://kubernetes.io/docs/getting-started-guides/minikube/)
 * Run a kubectl proxy server on your local machine
 * [Configure proctor-engine](#proctor-engine-configuration)
-* Running `go build -o proctor-engine` will build binary to run proctor-engine 
+* Running `go build -o proctor-engine` will build binary to run proctor-engine
+* Run database migrations by running this command `./proctor-engine migrate` from the repo directory
 * Start service by `./proctor-engine start`
 * Run `curl {host-address:port}/ping` for health-check of service
 
 ### Running tests
 
 * [Setup dev environment](#dev-environment-setup)
+* Set `PROCTOR_POSTGRES_DATABASE` to `proctor_engine_test` for test purposes
+* Run database migrations by running this command `./proctor-engine migrate` from the repo directory
 * Run tests: `go test -race -cover $(glide novendor)`
 
 #### Proctor Engine configuration
@@ -39,7 +42,7 @@ It takes care of executing jobs and maintaining their configuration.
 * `PROCTOR_APP_PORT` is port on which service will run
 * `PROCTOR_LOG_LEVEL` defines log levels of service. Available options are: `debug`,`info`,`warn`,`error`,`fatal`,`panic`
 * `PROCTOR_REDIS_ADDRESS` is hostname and port of redis store for jobs configuration and metadata
-* `PROCTOR_REDIS_MAX_ACTIVE_CONNECTIONS` defines maximum active connections to redis. Maximum idle connections is half of this config 
+* `PROCTOR_REDIS_MAX_ACTIVE_CONNECTIONS` defines maximum active connections to redis. Maximum idle connections is half of this config
 * `PROCTOR_LOGS_STREAM_READ_BUFFER_SIZE` and `PROCTOR_LOGS_STREAM_WRITE_BUFFER_SIZE` is the buffer size for websocket connection while streaming logs
 * `PROCTOR_KUBE_CONFIG` needs to be set only if service is running outside a kubernetes cluster
   * If unset, service will execute jobs in the same kubernetes cluster where it is run
@@ -48,3 +51,5 @@ It takes care of executing jobs and maintaining their configuration.
 * `PROCTOR_DEFAULT_NAMESPACE` is the namespace under which jobs will be run in kubernetes cluster
 * `PROCTOR_KUBE_CLUSTER_HOST_NAME` is address to proxy server for kube cluster. It is used for fetching logs of a pod using http
 * Before streaming logs of jobs, `PROCTOR_KUBE_POD_LIST_WAIT_TIME` is the time to wait until jobs and pods are in active/successful/failed state
+* `PROCTOR_POSTGRES_USER`, `PROCTOR_POSTGRES_PASSWORD` and `PROCTOR_POSTGRES_ADDRESS`is the username and password to the postgres database you wish to connect to
+* Set `PROCTOR_POSTGRES_DATABASE` to `proctor_engine_development` for development purpose

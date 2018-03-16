@@ -20,6 +20,6 @@ func Start() error {
 
 	graceful.Run(appPort, 2*time.Second, server)
 
-	logger.Info("Stopped server")
+	logger.Info("Stopped server gracefully")
 	return nil
 }
