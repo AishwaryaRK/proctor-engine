@@ -1,4 +1,4 @@
-create table jobs_execution_audit_log (
+CREATE TABLE jobs_execution_audit_log (
   id serial not null primary key,
   job_name text,
   image_name text,

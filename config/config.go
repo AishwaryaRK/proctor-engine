@@ -67,3 +67,11 @@ func PostgresAddress() string {
 func PostgresDatabase() string {
 	return viper.GetString("POSTGRES_DATABASE")
 }
+
+func PostgresMaxConnections() int {
+	return viper.GetInt("POSTGRES_MAX_CONNECTIONS")
+}
+
+func PostgresConnectionMaxLifetime() int {
+	return viper.GetInt("POSTGRES_CONNECTIONS_MAX_LIFETIME")
+}

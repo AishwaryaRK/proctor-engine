@@ -1,5 +1,5 @@
-hash: e4e0f44aa5639ec2657b52473d4980cfe2ed993802d9d5e32f3329449097c82f
-updated: 2018-03-16T01:54:24.923958+05:30
+hash: c7fcde13c2b75d0d66dd477281d5f6825bebf5cc9d88407c6d4f3f7ae490f64d
+updated: 2018-03-16T20:56:46.802284+05:30
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
@@ -80,6 +80,10 @@ imports:
   version: 6633656539c1639d9d78127b7d47c622b5d7b6dc
 - name: github.com/jarcoal/httpmock
   version: 4442edb3db31196622da56482fd8d0fa375fba4d
+- name: github.com/jmoiron/sqlx
+  version: cf35089a197953c69420c8d0cecda90809764b1d
+  subpackages:
+  - reflectx
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
 - name: github.com/lib/pq
@@ -113,6 +117,8 @@ imports:
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
+- name: github.com/satori/go.uuid
+  version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/sirupsen/logrus
   version: 95cd2b9c79aa5e72ab0bc69b7ccc2be15bf850f6
 - name: github.com/spf13/afero

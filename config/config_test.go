@@ -120,3 +120,19 @@ func TestPostgresDatabase(t *testing.T) {
 
 	assert.Equal(t, "proctor_engine_development", PostgresDatabase())
 }
+
+func TestPostgresMaxConnections(t *testing.T) {
+	os.Setenv("PROCTOR_POSTGRES_MAX_CONNECTIONS", "50")
+
+	viper.AutomaticEnv()
+
+	assert.Equal(t, 50, PostgresMaxConnections())
+}
+
+func TestPostgresConnectionMaxLifetime(t *testing.T) {
+	os.Setenv("PROCTOR_POSTGRES_CONNECTIONS_MAX_LIFETIME", "30")
+
+	viper.AutomaticEnv()
+
+	assert.Equal(t, 30, PostgresConnectionMaxLifetime())
+}
