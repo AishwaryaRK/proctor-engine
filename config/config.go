@@ -51,3 +51,27 @@ func KubeJobActiveDeadlineSeconds() *int64 {
 	tmp := viper.GetInt64("KUBE_JOB_ACTIVE_DEADLINE_SECONDS")
 	return &tmp
 }
+
+func PostgresUser() string {
+	return viper.GetString("POSTGRES_USER")
+}
+
+func PostgresPassword() string {
+	return viper.GetString("POSTGRES_PASSWORD")
+}
+
+func PostgresAddress() string {
+	return viper.GetString("POSTGRES_ADDRESS")
+}
+
+func PostgresDatabase() string {
+	return viper.GetString("POSTGRES_DATABASE")
+}
+
+func PostgresMaxConnections() int {
+	return viper.GetInt("POSTGRES_MAX_CONNECTIONS")
+}
+
+func PostgresConnectionMaxLifetime() int {
+	return viper.GetInt("POSTGRES_CONNECTIONS_MAX_LIFETIME")
+}

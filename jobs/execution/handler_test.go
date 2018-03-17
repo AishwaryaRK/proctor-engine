@@ -2,6 +2,7 @@ package execution
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gojekfarm/proctor-engine/audit"
 	"github.com/gojekfarm/proctor-engine/jobs/metadata"
 	"github.com/gojekfarm/proctor-engine/jobs/secrets"
 	"github.com/gojekfarm/proctor-engine/kubernetes"
@@ -24,6 +26,7 @@ type ExecutionerTestSuite struct {
 	mockKubeClient    kubernetes.MockClient
 	mockMetadataStore *metadata.MockStore
 	mockSecretsStore  *secrets.MockStore
+	mockAuditor       *audit.MockAuditor
 	testExecutioner   Executioner
 }
 
@@ -31,7 +34,8 @@ func (suite *ExecutionerTestSuite) SetupTest() {
 	suite.mockKubeClient = kubernetes.MockClient{}
 	suite.mockMetadataStore = &metadata.MockStore{}
 	suite.mockSecretsStore = &secrets.MockStore{}
-	suite.testExecutioner = NewExecutioner(&suite.mockKubeClient, suite.mockMetadataStore, suite.mockSecretsStore)
+	suite.mockAuditor = &audit.MockAuditor{}
+	suite.testExecutioner = NewExecutioner(&suite.mockKubeClient, suite.mockMetadataStore, suite.mockSecretsStore, suite.mockAuditor)
 }
 
 func (suite *ExecutionerTestSuite) TestSuccessfulJobExecution() {
@@ -64,18 +68,27 @@ func (suite *ExecutionerTestSuite) TestSuccessfulJobExecution() {
 	}
 	suite.mockSecretsStore.On("GetJobSecrets", jobName).Return(jobSecrets, nil).Once()
 
-	executedJobName := "proctor-ipsum-lorem"
+	jobSubmittedForExecution := "proctor-ipsum-lorem"
 	envVarsForImage := utility.MergeMaps(jobArgs, jobSecrets)
-	suite.mockKubeClient.On("ExecuteJob", jobMetadata.ImageName, envVarsForImage).Return(executedJobName, nil).Once()
+	suite.mockKubeClient.On("ExecuteJob", jobMetadata.ImageName, envVarsForImage).Return(jobSubmittedForExecution, nil).Once()
+
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, utility.JobNameContextKey, jobName)
+	ctx = context.WithValue(ctx, utility.JobArgsContextKey, jobArgs)
+	ctx = context.WithValue(ctx, utility.ImageNameContextKey, jobMetadata.ImageName)
+	ctx = context.WithValue(ctx, utility.JobSubmittedForExecutionContextKey, jobSubmittedForExecution)
+	ctx = context.WithValue(ctx, utility.JobSubmissionStatusContextKey, utility.JobSubmissionSuccess)
+	suite.mockAuditor.On("AuditJobsExecution", ctx).Return().Once()
 
 	suite.testExecutioner.Handle()(responseRecorder, req)
 
 	suite.mockMetadataStore.AssertExpectations(t)
 	suite.mockSecretsStore.AssertExpectations(t)
 	suite.mockKubeClient.AssertExpectations(t)
+	suite.mockAuditor.AssertExpectations(t)
 
 	assert.Equal(t, http.StatusCreated, responseRecorder.Code)
-	assert.Equal(t, fmt.Sprintf("{ \"name\":\"%s\" }", executedJobName), responseRecorder.Body.String())
+	assert.Equal(t, fmt.Sprintf("{ \"name\":\"%s\" }", jobSubmittedForExecution), responseRecorder.Body.String())
 }
 
 func (suite *ExecutionerTestSuite) TestJobExecutionOnMalformedRequest() {
@@ -85,11 +98,17 @@ func (suite *ExecutionerTestSuite) TestJobExecutionOnMalformedRequest() {
 	req := httptest.NewRequest("POST", "/execute", bytes.NewReader([]byte(jobExecutionRequest)))
 	responseRecorder := httptest.NewRecorder()
 
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, utility.JobSubmissionStatusContextKey, utility.JobSubmissionClientError)
+
+	suite.mockAuditor.On("AuditJobsExecution", ctx).Return().Once()
+
 	suite.testExecutioner.Handle()(responseRecorder, req)
 
 	suite.mockMetadataStore.AssertNotCalled(t, "GetJobMetadata", mock.Anything)
 	suite.mockSecretsStore.AssertNotCalled(t, "GetJobSecrets", mock.Anything)
 	suite.mockKubeClient.AssertNotCalled(t, "ExecuteJob", mock.Anything, mock.Anything)
+	suite.mockAuditor.AssertExpectations(t)
 
 	assert.Equal(t, http.StatusBadRequest, responseRecorder.Code)
 	assert.Equal(t, utility.ClientError, responseRecorder.Body.String())
@@ -110,11 +129,18 @@ func (suite *ExecutionerTestSuite) TestJobExecutionOnImageLookupFailuer() {
 
 	suite.mockMetadataStore.On("GetJobMetadata", jobName).Return(&metadata.Metadata{}, errors.New("No image found for job name")).Once()
 
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, utility.JobNameContextKey, jobName)
+	ctx = context.WithValue(ctx, utility.JobArgsContextKey, job.Args)
+	ctx = context.WithValue(ctx, utility.JobSubmissionStatusContextKey, utility.JobSubmissionServerError)
+	suite.mockAuditor.On("AuditJobsExecution", ctx).Return().Once()
+
 	suite.testExecutioner.Handle()(responseRecorder, req)
 
 	suite.mockMetadataStore.AssertExpectations(t)
 	suite.mockSecretsStore.AssertNotCalled(t, "GetJobSecrets", mock.Anything)
 	suite.mockKubeClient.AssertNotCalled(t, "ExecuteJob", mock.Anything, mock.Anything)
+	suite.mockAuditor.AssertExpectations(t)
 
 	assert.Equal(t, http.StatusInternalServerError, responseRecorder.Code)
 	assert.Equal(t, utility.ServerError, responseRecorder.Body.String())
@@ -138,11 +164,19 @@ func (suite *ExecutionerTestSuite) TestJobExecutionOnSecretsFetchFailuer() {
 	emptyMap := make(map[string]string)
 	suite.mockSecretsStore.On("GetJobSecrets", jobName).Return(emptyMap, errors.New("secrets fetch error")).Once()
 
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, utility.JobNameContextKey, jobName)
+	ctx = context.WithValue(ctx, utility.JobArgsContextKey, job.Args)
+	ctx = context.WithValue(ctx, utility.ImageNameContextKey, "")
+	ctx = context.WithValue(ctx, utility.JobSubmissionStatusContextKey, utility.JobSubmissionServerError)
+	suite.mockAuditor.On("AuditJobsExecution", ctx).Return().Once()
+
 	suite.testExecutioner.Handle()(responseRecorder, req)
 
 	suite.mockMetadataStore.AssertExpectations(t)
 	suite.mockSecretsStore.AssertExpectations(t)
 	suite.mockKubeClient.AssertNotCalled(t, "ExecuteJob", mock.Anything, mock.Anything, mock.Anything)
+	suite.mockAuditor.AssertExpectations(t)
 
 	assert.Equal(t, http.StatusNotFound, responseRecorder.Code)
 	assert.Equal(t, utility.ServerError, responseRecorder.Body.String())
@@ -173,11 +207,19 @@ func (suite *ExecutionerTestSuite) TestJobExecutionOnExecutionFailure() {
 
 	suite.mockKubeClient.On("ExecuteJob", jobMetadata.ImageName, emptyMap).Return("", errors.New("Kube client job execution error")).Once()
 
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, utility.JobNameContextKey, job.Name)
+	ctx = context.WithValue(ctx, utility.JobArgsContextKey, job.Args)
+	ctx = context.WithValue(ctx, utility.ImageNameContextKey, jobMetadata.ImageName)
+	ctx = context.WithValue(ctx, utility.JobSubmissionStatusContextKey, utility.JobSubmissionServerError)
+	suite.mockAuditor.On("AuditJobsExecution", ctx).Return().Once()
+
 	suite.testExecutioner.Handle()(responseRecorder, req)
 
 	suite.mockMetadataStore.AssertExpectations(t)
 	suite.mockSecretsStore.AssertExpectations(t)
 	suite.mockKubeClient.AssertExpectations(t)
+	suite.mockAuditor.AssertExpectations(t)
 
 	assert.Equal(t, http.StatusInternalServerError, responseRecorder.Code)
 	assert.Equal(t, utility.ServerError, responseRecorder.Body.String())

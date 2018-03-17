@@ -9,8 +9,8 @@ import (
 
 	"github.com/gojekfarm/proctor-engine/config"
 	"github.com/gojekfarm/proctor-engine/logger"
+	uuid "github.com/satori/go.uuid"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
 	batch_v1 "k8s.io/client-go/pkg/apis/batch/v1"
@@ -68,7 +68,7 @@ func getEnvVars(envMap map[string]string) []v1.EnvVar {
 }
 
 func uniqueName() string {
-	return "proctor" + "-" + rand.String(9)
+	return "proctor" + "-" + uuid.NewV4().String()
 }
 
 func jobLabel(jobName string) map[string]string {

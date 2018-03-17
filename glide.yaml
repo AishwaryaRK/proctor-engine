@@ -28,3 +28,9 @@ import:
 - package: github.com/jarcoal/httpmock
 - package: github.com/stretchr/testify
   version: ~1.2.1
+- package: github.com/satori/go.uuid
+  version: v1.2.0
+- package: github.com/mattes/migrate
+  version: v3.0.1
+- package: github.com/jmoiron/sqlx
+- package: github.com/lib/pq
