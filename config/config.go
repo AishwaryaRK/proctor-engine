@@ -60,8 +60,12 @@ func PostgresPassword() string {
 	return viper.GetString("POSTGRES_PASSWORD")
 }
 
-func PostgresAddress() string {
-	return viper.GetString("POSTGRES_ADDRESS")
+func PostgresHost() string {
+	return viper.GetString("POSTGRES_HOST")
+}
+
+func PostgresPort() int {
+	return viper.GetInt("POSTGRES_PORT")
 }
 
 func PostgresDatabase() string {

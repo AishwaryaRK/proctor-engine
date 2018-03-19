@@ -10,7 +10,7 @@ import (
 )
 
 func TestNamedExec(t *testing.T) {
-	dataSourceName := fmt.Sprintf("dbname=%s user=%s password=%s host=%s sslmode=disable", config.PostgresDatabase(), config.PostgresUser(), config.PostgresPassword(), config.PostgresAddress())
+	dataSourceName := fmt.Sprintf("dbname=%s user=%s password=%s host=%s sslmode=disable", config.PostgresDatabase(), config.PostgresUser(), config.PostgresPassword(), config.PostgresHost())
 
 	db, err := sqlx.Connect("postgres", dataSourceName)
 	assert.NoError(t, err)

@@ -21,7 +21,7 @@ type client struct {
 }
 
 func NewClient() Client {
-	dataSourceName := fmt.Sprintf("dbname=%s user=%s password=%s host=%s sslmode=disable", config.PostgresDatabase(), config.PostgresUser(), config.PostgresPassword(), config.PostgresAddress())
+	dataSourceName := fmt.Sprintf("dbname=%s user=%s password=%s host=%s sslmode=disable", config.PostgresDatabase(), config.PostgresUser(), config.PostgresPassword(), config.PostgresHost())
 
 	db, err := sqlx.Connect("postgres", dataSourceName)
 	if err != nil {

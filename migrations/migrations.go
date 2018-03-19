@@ -15,7 +15,7 @@ import (
 var migrationsPath, postgresConnectionURL string
 
 func init() {
-	postgresConnectionURL = fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", config.PostgresUser(), config.PostgresPassword(), config.PostgresAddress(), config.PostgresDatabase())
+	postgresConnectionURL = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", config.PostgresUser(), config.PostgresPassword(), config.PostgresHost(), config.PostgresPort(), config.PostgresDatabase())
 	migrationsPath = "file://./migrations"
 }
 

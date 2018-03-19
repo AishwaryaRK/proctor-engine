@@ -105,12 +105,20 @@ func TestPostgresPassword(t *testing.T) {
 	assert.Equal(t, "ipsum-lorem", PostgresPassword())
 }
 
-func TestPostgresAddress(t *testing.T) {
-	os.Setenv("PROCTOR_POSTGRES_ADDRESS", "localhost:5432")
+func TestPostgresHost(t *testing.T) {
+	os.Setenv("PROCTOR_POSTGRES_HOST", "localhost")
 
 	viper.AutomaticEnv()
 
-	assert.Equal(t, "localhost:5432", PostgresAddress())
+	assert.Equal(t, "localhost", PostgresHost())
+}
+
+func TestPostgresPort(t *testing.T) {
+	os.Setenv("PROCTOR_POSTGRES_PORT", "5432")
+
+	viper.AutomaticEnv()
+
+	assert.Equal(t, 5432, PostgresPort())
 }
 
 func TestPostgresDatabase(t *testing.T) {

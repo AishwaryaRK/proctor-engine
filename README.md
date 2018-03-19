@@ -52,7 +52,7 @@ It takes care of executing jobs and maintaining their configuration.
 * `PROCTOR_DEFAULT_NAMESPACE` is the namespace under which jobs will be run in kubernetes cluster. By default, K8s has namespace "default". If you set another value, please create namespace in K8s before deploying proctor-engine
 * `PROCTOR_KUBE_CLUSTER_HOST_NAME` is address to proxy server for kube cluster. It is used for fetching logs of a pod using http
 * Before streaming logs of jobs, `PROCTOR_KUBE_POD_LIST_WAIT_TIME` is the time to wait until jobs and pods are in active/successful/failed state
-* `PROCTOR_POSTGRES_USER`, `PROCTOR_POSTGRES_PASSWORD` and `PROCTOR_POSTGRES_ADDRESS`is the username and password to the postgres database you wish to connect to
+* `PROCTOR_POSTGRES_USER`, `PROCTOR_POSTGRES_PASSWORD`, `PROCTOR_POSTGRES_HOST` and `PROCTOR_POSTGRES_PORT` is the username and password to the postgres database you wish to connect to
 * Set `PROCTOR_POSTGRES_DATABASE` to `proctor_engine_development` for development purpose
 * Create database `PROCTOR_POSTGRES_DATABASE`
 * `PROCTOR_POSTGRES_MAX_CONNECTIONS` defines maximum open and idle connections to postgres
