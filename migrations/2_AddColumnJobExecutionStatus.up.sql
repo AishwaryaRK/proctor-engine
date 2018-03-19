@@ -1,1 +1,1 @@
-alter table jobs_execution_audit_log add column job_execution_status text default "WAITING";
+alter table jobs_execution_audit_log add column job_execution_status text default 'WAITING';
