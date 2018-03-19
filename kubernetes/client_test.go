@@ -164,12 +164,10 @@ func (suite *ClientTestSuite) TestShouldReturnSuccessJobExecutionStatus() {
 		watcher.Stop()
 	}()
 
-	var jobExecutionStatus bool
-	var err error
-	jobExecutionStatus, err = suite.testClient.JobExecutionStatus(uniqueJobName)
+	jobExecutionStatus, err := suite.testClient.JobExecutionStatus(uniqueJobName)
 	assert.NoError(t, err)
 
-	assert.True(t, jobExecutionStatus, "Should return true for job success")
+	assert.Equal(t, "SUCCEEDED", jobExecutionStatus, "Should return true for job success")
 }
 
 func (suite *ClientTestSuite) TestShouldReturnFailedJobExecutionStatus() {
@@ -198,12 +196,10 @@ func (suite *ClientTestSuite) TestShouldReturnFailedJobExecutionStatus() {
 		watcher.Stop()
 	}()
 
-	var jobExecutionStatus bool
-	var err error
-	jobExecutionStatus, err = suite.testClient.JobExecutionStatus(uniqueJobName)
+	jobExecutionStatus, err := suite.testClient.JobExecutionStatus(uniqueJobName)
 	assert.NoError(t, err)
 
-	assert.False(t, jobExecutionStatus, "Should return true for job success")
+	assert.Equal(t, "FAILED", jobExecutionStatus, "Should return true for job success")
 }
 
 func (suite *ClientTestSuite) TestShouldReturnErrorJobExecutionStatus() {
@@ -228,12 +224,10 @@ func (suite *ClientTestSuite) TestShouldReturnErrorJobExecutionStatus() {
 		watcher.Stop()
 	}()
 
-	var jobExecutionStatus bool
-	var err error
-	jobExecutionStatus, err = suite.testClient.JobExecutionStatus(uniqueJobName)
+	jobExecutionStatus, err := suite.testClient.JobExecutionStatus(uniqueJobName)
 	assert.NoError(t, err)
 
-	assert.False(t, jobExecutionStatus, "Should return true for job success")
+	assert.Equal(t, "FAILED", jobExecutionStatus, "Should return true for job success")
 }
 
 func TestClientTestSuite(t *testing.T) {

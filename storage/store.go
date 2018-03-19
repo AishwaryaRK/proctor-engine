@@ -10,6 +10,7 @@ import (
 
 type Store interface {
 	JobsExecutionAuditLog(string, string, string, string, map[string]string) error
+	UpdateJobsExecutionAuditLog(string, string) error
 }
 
 type store struct {
@@ -38,4 +39,13 @@ func (store *store) JobsExecutionAuditLog(jobSubmissionStatus, jobName, jobSubmi
 		JobSubmissionStatus:      jobSubmissionStatus,
 	}
 	return store.postgresClient.NamedExec("INSERT INTO jobs_execution_audit_log (job_name, image_name, job_submitted_for_execution, job_args, job_submission_status) VALUES (:job_name, :image_name, :job_submitted_for_execution, :job_args, :job_submission_status)", &jobsExecutionAuditLog)
+}
+
+func (store *store) UpdateJobsExecutionAuditLog(jobSubmittedForExecution, status string) error {
+	jobsExecutionAuditLog := postgres.JobsExecutionAuditLog{
+		JobExecutionStatus:       status,
+		JobSubmittedForExecution: jobSubmittedForExecution,
+	}
+
+	return store.postgresClient.NamedExec("UPDATE jobs_execution_audit_log SET job_execution_status = :job_name where job_submitted_for_execution = :status", &jobsExecutionAuditLog)
 }

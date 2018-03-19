@@ -20,6 +20,11 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+const (
+	SUCCEEDED string = "SUCCEEDED"
+	FAILED    string = "FAILED"
+)
+
 var typeMeta meta_v1.TypeMeta
 var namespace string
 
@@ -38,7 +43,7 @@ type client struct {
 type Client interface {
 	ExecuteJob(string, map[string]string) (string, error)
 	StreamJobLogs(string) (io.ReadCloser, error)
-	JobExecutionStatus(string) (bool, error)
+	JobExecutionStatus(string) (string, error)
 }
 
 func NewClient(kubeconfig string) Client {
@@ -202,16 +207,17 @@ func (client *client) StreamJobLogs(jobName string) (io.ReadCloser, error) {
 	}
 }
 
-func (client *client) JobExecutionStatus(jobSubmittedForExecution string) (bool, error) {
+func (client *client) JobExecutionStatus(jobSubmittedForExecution string) (string, error) {
 	batchV1 := client.clientSet.BatchV1()
 	kubernetesJobs := batchV1.Jobs(namespace)
 	listOptions := meta_v1.ListOptions{
-		TypeMeta: typeMeta,
+		TypeMeta:      typeMeta,
+		LabelSelector: jobLabelSelector(jobSubmittedForExecution),
 	}
 
 	watchJob, err := kubernetesJobs.Watch(listOptions)
 	if err != nil {
-		return false, err
+		return FAILED, err
 	}
 
 	resultChan := watchJob.ResultChan()
@@ -220,15 +226,15 @@ func (client *client) JobExecutionStatus(jobSubmittedForExecution string) (bool,
 
 	for event = range resultChan {
 		if event.Type == watch.Error {
-			return false, nil
+			return FAILED, nil
 		}
 		jobEvent = event.Object.(*batch_v1.Job)
 		if jobEvent.Status.Succeeded >= int32(1) {
-			return true, nil
+			return SUCCEEDED, nil
 		}
 	}
 
-	return false, nil
+	return FAILED, nil
 }
 
 func getLogsStreamReaderFor(podName string) (io.ReadCloser, error) {

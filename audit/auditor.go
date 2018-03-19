@@ -3,6 +3,7 @@ package audit
 import (
 	"context"
 
+	"github.com/gojekfarm/proctor-engine/kubernetes"
 	"github.com/gojekfarm/proctor-engine/logger"
 	"github.com/gojekfarm/proctor-engine/storage"
 	"github.com/gojekfarm/proctor-engine/utility"
@@ -13,12 +14,14 @@ type Auditor interface {
 }
 
 type auditor struct {
-	store storage.Store
+	store      storage.Store
+	kubeClient kubernetes.Client
 }
 
-func New(store storage.Store) Auditor {
+func New(store storage.Store, kubeClient kubernetes.Client) Auditor {
 	return &auditor{
-		store: store,
+		store:      store,
+		kubeClient: kubeClient,
 	}
 }
 
@@ -38,6 +41,20 @@ func (auditor *auditor) AuditJobsExecution(ctx context.Context) {
 	jobArgs := ctx.Value(utility.JobArgsContextKey).(map[string]string)
 
 	err := auditor.store.JobsExecutionAuditLog(jobSubmissionStatus, jobName, jobSubmittedForExecution, imageName, jobArgs)
+	if err != nil {
+		logger.Error("Error auditing jobs execution", err)
+	}
+
+	go auditor.auditJobExecutionStatus(jobSubmittedForExecution)
+}
+
+func (auditor *auditor) auditJobExecutionStatus(jobSubmittedForExecution string) {
+	status, err := auditor.kubeClient.JobExecutionStatus(jobSubmittedForExecution)
+	if err != nil {
+		logger.Error("Error getting job execution status", err)
+	}
+
+	err = auditor.store.UpdateJobsExecutionAuditLog(jobSubmittedForExecution, status)
 	if err != nil {
 		logger.Error("Error auditing jobs execution", err)
 	}

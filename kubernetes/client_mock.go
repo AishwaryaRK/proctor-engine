@@ -21,7 +21,7 @@ func (m *MockClient) StreamJobLogs(jobName string) (io.ReadCloser, error) {
 	return args.Get(0).(*utility.Buffer), args.Error(1)
 }
 
-func (m *MockClient) JobExecutionStatus(jobSubmittedForExecution string) (bool, error) {
+func (m *MockClient) JobExecutionStatus(jobSubmittedForExecution string) (string, error) {
 	args := m.Called(jobSubmittedForExecution)
-	return args.Bool(0), args.Error(1)
+	return args.String(0), args.Error(1)
 }
