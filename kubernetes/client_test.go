@@ -3,13 +3,17 @@ package kubernetes
 import (
 	"bufio"
 	"testing"
+	"time"
 
 	"github.com/gojekfarm/proctor-engine/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 	batch_v1 "k8s.io/client-go/kubernetes/typed/batch/v1"
 	"k8s.io/client-go/pkg/api/v1"
+	batchV1 "k8s.io/client-go/pkg/apis/batch/v1"
+	testing_kubernetes "k8s.io/client-go/testing"
 
 	fakeclientset "k8s.io/client-go/kubernetes/fake"
 
@@ -132,6 +136,104 @@ func (suite *ClientTestSuite) TestStreamLogsPodNotFoundFailure() {
 
 	_, err := suite.testClientStreaming.StreamJobLogs("unknown-job")
 	assert.Error(t, err)
+}
+
+func (suite *ClientTestSuite) TestShouldReturnSuccessJobExecutionStatus() {
+	t := suite.T()
+
+	watcher := watch.NewFake()
+	suite.fakeClientSet.PrependWatchReactor("jobs", testing_kubernetes.DefaultWatchReactor(watcher, nil))
+
+	var testJob batchV1.Job
+	uniqueJobName := "proctor-job-1"
+	label := jobLabel(uniqueJobName)
+	objectMeta := meta_v1.ObjectMeta{
+		Name:   uniqueJobName,
+		Labels: label,
+	}
+	testJob.ObjectMeta = objectMeta
+
+	go func() {
+		testJob.Status.Active = 1
+		watcher.Modify(&testJob)
+		testJob.Status.Active = 0
+		testJob.Status.Succeeded = 1
+		watcher.Modify(&testJob)
+
+		time.Sleep(time.Second * 1)
+		watcher.Stop()
+	}()
+
+	var jobExecutionStatus bool
+	var err error
+	jobExecutionStatus, err = suite.testClient.JobExecutionStatus(uniqueJobName)
+	assert.NoError(t, err)
+
+	assert.True(t, jobExecutionStatus, "Should return true for job success")
+}
+
+func (suite *ClientTestSuite) TestShouldReturnFailedJobExecutionStatus() {
+	t := suite.T()
+
+	watcher := watch.NewFake()
+	suite.fakeClientSet.PrependWatchReactor("jobs", testing_kubernetes.DefaultWatchReactor(watcher, nil))
+
+	var testJob batchV1.Job
+	uniqueJobName := "proctor-job-1"
+	label := jobLabel(uniqueJobName)
+	objectMeta := meta_v1.ObjectMeta{
+		Name:   uniqueJobName,
+		Labels: label,
+	}
+	testJob.ObjectMeta = objectMeta
+
+	go func() {
+		testJob.Status.Active = 1
+		watcher.Modify(&testJob)
+		testJob.Status.Active = 0
+		testJob.Status.Failed = 1
+		watcher.Modify(&testJob)
+
+		time.Sleep(time.Second * 1)
+		watcher.Stop()
+	}()
+
+	var jobExecutionStatus bool
+	var err error
+	jobExecutionStatus, err = suite.testClient.JobExecutionStatus(uniqueJobName)
+	assert.NoError(t, err)
+
+	assert.False(t, jobExecutionStatus, "Should return true for job success")
+}
+
+func (suite *ClientTestSuite) TestShouldReturnErrorJobExecutionStatus() {
+	t := suite.T()
+
+	watcher := watch.NewFake()
+	suite.fakeClientSet.PrependWatchReactor("jobs", testing_kubernetes.DefaultWatchReactor(watcher, nil))
+
+	var testJob batchV1.Job
+	uniqueJobName := "proctor-job-1"
+	label := jobLabel(uniqueJobName)
+	objectMeta := meta_v1.ObjectMeta{
+		Name:   uniqueJobName,
+		Labels: label,
+	}
+	testJob.ObjectMeta = objectMeta
+
+	go func() {
+		watcher.Error(&testJob)
+
+		time.Sleep(time.Second * 1)
+		watcher.Stop()
+	}()
+
+	var jobExecutionStatus bool
+	var err error
+	jobExecutionStatus, err = suite.testClient.JobExecutionStatus(uniqueJobName)
+	assert.NoError(t, err)
+
+	assert.False(t, jobExecutionStatus, "Should return true for job success")
 }
 
 func TestClientTestSuite(t *testing.T) {

@@ -11,6 +11,7 @@ import (
 	"github.com/gojekfarm/proctor-engine/logger"
 	uuid "github.com/satori/go.uuid"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
 	batch_v1 "k8s.io/client-go/pkg/apis/batch/v1"
@@ -37,6 +38,7 @@ type client struct {
 type Client interface {
 	ExecuteJob(string, map[string]string) (string, error)
 	StreamJobLogs(string) (io.ReadCloser, error)
+	JobExecutionStatus(string) (bool, error)
 }
 
 func NewClient(kubeconfig string) Client {
@@ -198,6 +200,35 @@ func (client *client) StreamJobLogs(jobName string) (io.ReadCloser, error) {
 			}
 		}
 	}
+}
+
+func (client *client) JobExecutionStatus(jobSubmittedForExecution string) (bool, error) {
+	batchV1 := client.clientSet.BatchV1()
+	kubernetesJobs := batchV1.Jobs(namespace)
+	listOptions := meta_v1.ListOptions{
+		TypeMeta: typeMeta,
+	}
+
+	watchJob, err := kubernetesJobs.Watch(listOptions)
+	if err != nil {
+		return false, err
+	}
+
+	resultChan := watchJob.ResultChan()
+	var event watch.Event
+	var jobEvent *batch_v1.Job
+
+	for event = range resultChan {
+		if event.Type == watch.Error {
+			return false, nil
+		}
+		jobEvent = event.Object.(*batch_v1.Job)
+		if jobEvent.Status.Succeeded >= int32(1) {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func getLogsStreamReaderFor(podName string) (io.ReadCloser, error) {
