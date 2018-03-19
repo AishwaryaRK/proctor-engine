@@ -49,7 +49,7 @@ It takes care of executing jobs and maintaining their configuration.
   * If unset, service will execute jobs in the same kubernetes cluster where it is run
   * When set to "out-of-cluster", service will fetch kube config based on current-context from `.kube/config` file in home directory
 * If a job doesn't reach completion, it is terminated after `PROCTOR_KUBE_JOB_ACTIVE_DEADLINE_SECONDS`
-* `PROCTOR_DEFAULT_NAMESPACE` is the namespace under which jobs will be run in kubernetes cluster
+* `PROCTOR_DEFAULT_NAMESPACE` is the namespace under which jobs will be run in kubernetes cluster. By default, K8s has namespace "default". If you set another value, please create namespace in K8s before deploying proctor-engine
 * `PROCTOR_KUBE_CLUSTER_HOST_NAME` is address to proxy server for kube cluster. It is used for fetching logs of a pod using http
 * Before streaming logs of jobs, `PROCTOR_KUBE_POD_LIST_WAIT_TIME` is the time to wait until jobs and pods are in active/successful/failed state
 * `PROCTOR_POSTGRES_USER`, `PROCTOR_POSTGRES_PASSWORD` and `PROCTOR_POSTGRES_ADDRESS`is the username and password to the postgres database you wish to connect to

@@ -202,6 +202,6 @@ func (client *client) StreamJobLogs(jobName string) (io.ReadCloser, error) {
 
 func getLogsStreamReaderFor(podName string) (io.ReadCloser, error) {
 	logger.Debug("reading pod logs for: ", podName)
-	resp, err := http.Get("http://" + config.KubeClusterHostName() + "/api/v1/namespaces/default/pods/" + podName + "/log?follow=true")
+	resp, err := http.Get("http://" + config.KubeClusterHostName() + "/api/v1/namespaces/" + namespace + "/pods/" + podName + "/log?follow=true")
 	return resp.Body, err
 }

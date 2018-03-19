@@ -34,6 +34,7 @@ func (suite *ClientTestSuite) SetupTest() {
 	}
 	suite.jobName = "job1"
 	suite.podName = "pod1"
+	namespace := config.DefaultNamespace()
 	suite.fakeClientSetStreaming = fakeclientset.NewSimpleClientset(&v1.Pod{
 		TypeMeta: meta_v1.TypeMeta{
 			Kind:       "Pod",
@@ -41,7 +42,7 @@ func (suite *ClientTestSuite) SetupTest() {
 		},
 		ObjectMeta: meta_v1.ObjectMeta{
 			Name:      suite.podName,
-			Namespace: "default",
+			Namespace: namespace,
 			Labels: map[string]string{
 				"tag": "",
 				"job": suite.jobName,
@@ -108,7 +109,8 @@ func (suite *ClientTestSuite) TestStreamLogsSuccess() {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", "http://"+config.KubeClusterHostName()+"/api/v1/namespaces/default/pods/"+suite.podName+"/log?follow=true",
+	namespace := config.DefaultNamespace()
+	httpmock.RegisterResponder("GET", "http://"+config.KubeClusterHostName()+"/api/v1/namespaces/"+namespace+"/pods/"+suite.podName+"/log?follow=true",
 		httpmock.NewStringResponder(200, "logs are streaming"))
 
 	logStream, err := suite.testClientStreaming.StreamJobLogs(suite.jobName)
