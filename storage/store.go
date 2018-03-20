@@ -47,5 +47,5 @@ func (store *store) UpdateJobsExecutionAuditLog(jobSubmittedForExecution, status
 		JobSubmittedForExecution: jobSubmittedForExecution,
 	}
 
-	return store.postgresClient.NamedExec("UPDATE jobs_execution_audit_log SET job_execution_status = :job_name where job_submitted_for_execution = :status", &jobsExecutionAuditLog)
+	return store.postgresClient.NamedExec("UPDATE jobs_execution_audit_log SET job_execution_status = :job_execution_status where job_submitted_for_execution = :job_submitted_for_execution", &jobsExecutionAuditLog)
 }
