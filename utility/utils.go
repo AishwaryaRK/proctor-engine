@@ -9,6 +9,7 @@ const JobSubmissionServerError = "server_error"
 
 const JobSucceeded = "SUCCEEDED"
 const JobFailed = "FAILED"
+const JobWaiting = "WAITING"
 
 const JobNameContextKey = "job_name"
 const JobArgsContextKey = "job_args"

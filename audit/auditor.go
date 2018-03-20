@@ -29,7 +29,7 @@ func (auditor *auditor) AuditJobsExecution(ctx context.Context) {
 	jobSubmissionStatus := ctx.Value(utility.JobSubmissionStatusContextKey).(string)
 
 	if jobSubmissionStatus != utility.JobSubmissionSuccess {
-		err := auditor.store.JobsExecutionAuditLog(jobSubmissionStatus, "", "", "", map[string]string{})
+		err := auditor.store.JobsExecutionAuditLog(jobSubmissionStatus, utility.JobFailed, "", "", "", map[string]string{})
 		if err != nil {
 			logger.Error("Error auditing jobs execution", err)
 		}
@@ -40,7 +40,7 @@ func (auditor *auditor) AuditJobsExecution(ctx context.Context) {
 	imageName := ctx.Value(utility.ImageNameContextKey).(string)
 	jobArgs := ctx.Value(utility.JobArgsContextKey).(map[string]string)
 
-	err := auditor.store.JobsExecutionAuditLog(jobSubmissionStatus, jobName, jobSubmittedForExecution, imageName, jobArgs)
+	err := auditor.store.JobsExecutionAuditLog(jobSubmissionStatus, utility.JobWaiting, jobName, jobSubmittedForExecution, imageName, jobArgs)
 	if err != nil {
 		logger.Error("Error auditing jobs execution", err)
 	}
