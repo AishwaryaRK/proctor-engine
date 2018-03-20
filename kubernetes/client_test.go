@@ -145,7 +145,7 @@ func (suite *ClientTestSuite) TestShouldReturnSuccessJobExecutionStatus() {
 	suite.fakeClientSet.PrependWatchReactor("jobs", testing_kubernetes.DefaultWatchReactor(watcher, nil))
 
 	var testJob batchV1.Job
-	uniqueJobName := "proctor-job-1"
+	uniqueJobName := "proctor-job-2"
 	label := jobLabel(uniqueJobName)
 	objectMeta := meta_v1.ObjectMeta{
 		Name:   uniqueJobName,
@@ -154,9 +154,6 @@ func (suite *ClientTestSuite) TestShouldReturnSuccessJobExecutionStatus() {
 	testJob.ObjectMeta = objectMeta
 
 	go func() {
-		testJob.Status.Active = 1
-		watcher.Modify(&testJob)
-		testJob.Status.Active = 0
 		testJob.Status.Succeeded = 1
 		watcher.Modify(&testJob)
 
@@ -209,7 +206,7 @@ func (suite *ClientTestSuite) TestShouldReturnErrorJobExecutionStatus() {
 	suite.fakeClientSet.PrependWatchReactor("jobs", testing_kubernetes.DefaultWatchReactor(watcher, nil))
 
 	var testJob batchV1.Job
-	uniqueJobName := "proctor-job-1"
+	uniqueJobName := "proctor-job-3"
 	label := jobLabel(uniqueJobName)
 	objectMeta := meta_v1.ObjectMeta{
 		Name:   uniqueJobName,
