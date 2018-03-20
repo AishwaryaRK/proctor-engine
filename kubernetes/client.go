@@ -5,6 +5,8 @@ import (
 	"io"
 	"time"
 
+	"github.com/gojekfarm/proctor-engine/utility"
+
 	"net/http"
 
 	"github.com/gojekfarm/proctor-engine/config"
@@ -18,11 +20,6 @@ import (
 	//Package needed for kubernetes cluster in google cloud
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/client-go/tools/clientcmd"
-)
-
-const (
-	SUCCEEDED string = "SUCCEEDED"
-	FAILED    string = "FAILED"
 )
 
 var typeMeta meta_v1.TypeMeta
@@ -217,7 +214,7 @@ func (client *client) JobExecutionStatus(jobSubmittedForExecution string) (strin
 
 	watchJob, err := kubernetesJobs.Watch(listOptions)
 	if err != nil {
-		return FAILED, err
+		return utility.JobFailed, err
 	}
 
 	resultChan := watchJob.ResultChan()
@@ -226,15 +223,15 @@ func (client *client) JobExecutionStatus(jobSubmittedForExecution string) (strin
 
 	for event = range resultChan {
 		if event.Type == watch.Error {
-			return FAILED, nil
+			return utility.JobFailed, nil
 		}
 		jobEvent = event.Object.(*batch_v1.Job)
 		if jobEvent.Status.Succeeded >= int32(1) {
-			return SUCCEEDED, nil
+			return utility.JobSucceeded, nil
 		}
 	}
 
-	return FAILED, nil
+	return utility.JobFailed, nil
 }
 
 func getLogsStreamReaderFor(podName string) (io.ReadCloser, error) {
