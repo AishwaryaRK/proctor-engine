@@ -28,7 +28,7 @@ func TestExecutionAuditor(t *testing.T) {
 	ctx = context.WithValue(ctx, utility.JobArgsContextKey, jobArgs)
 
 	done := make(chan bool, 2)
-	mockStore.On("JobsExecutionAuditLog", utility.JobSubmissionSuccess, jobName, executedJobName, imageName, jobArgs).Return(nil).Once()
+	mockStore.On("JobsExecutionAuditLog", utility.JobSubmissionSuccess, "WAITING", jobName, executedJobName, imageName, jobArgs).Return(nil).Once()
 	mockKubeClient.On("JobExecutionStatus", executedJobName).Return("SUCCEEDED", nil).Once()
 	mockStore.On("UpdateJobsExecutionAuditLog", executedJobName, "SUCCEEDED").Return(nil).Run(func(args mock.Arguments) {}).Once().Run(func(args mock.Arguments) { done <- true })
 
@@ -45,7 +45,7 @@ func TestExecutionAuditorClientError(t *testing.T) {
 
 	ctx := context.WithValue(context.Background(), utility.JobSubmissionStatusContextKey, utility.JobSubmissionClientError)
 
-	mockStore.On("JobsExecutionAuditLog", utility.JobSubmissionClientError, "", "", "", map[string]string{}).Return(nil).Once()
+	mockStore.On("JobsExecutionAuditLog", utility.JobSubmissionClientError, "FAILED", "", "", "", map[string]string{}).Return(nil).Once()
 
 	testAuditor.AuditJobsExecution(ctx)
 
@@ -58,7 +58,7 @@ func TestExecutionAuditorServerError(t *testing.T) {
 
 	ctx := context.WithValue(context.Background(), utility.JobSubmissionStatusContextKey, utility.JobSubmissionServerError)
 
-	mockStore.On("JobsExecutionAuditLog", utility.JobSubmissionServerError, "", "", "", map[string]string{}).Return(nil).Once()
+	mockStore.On("JobsExecutionAuditLog", utility.JobSubmissionServerError, "FAILED", "", "", "", map[string]string{}).Return(nil).Once()
 
 	testAuditor.AuditJobsExecution(ctx)
 
