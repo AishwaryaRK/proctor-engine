@@ -1,1 +1,1 @@
-alter table jobs_execution_audit_log drop column job_execution_status;
+alter table jobs_execution_audit_log drop column if exists job_execution_status;
